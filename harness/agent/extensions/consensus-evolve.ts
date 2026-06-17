@@ -285,6 +285,8 @@ interface SessionStats {
 	scrubLogged: Set<string>;
 	/** signatures we've already steered toward sequentialthinking THIS turn */
 	seqThinkHinted: Set<string>;
+	/** exact verification commands already given explicit grader-feedback nudges THIS turn */
+	verifyFailureHinted: Set<string>;
 	/** libraries the agent has verified via context7 this session */
 	context7Verified: Set<string>;
 	/** libraries we've already steered toward context7 this session */
@@ -326,6 +328,7 @@ function freshStats(): SessionStats {
 		degenAborts: 0,
 		scrubLogged: new Set(),
 		seqThinkHinted: new Set(),
+		verifyFailureHinted: new Set(),
 		context7Verified: new Set(),
 		context7Hinted: new Set(),
 		planSuggestSent: false,
@@ -740,6 +743,33 @@ export function normalizeResultNoise(s: string): string {
 		.replace(/wall time:?\s*[\d.]+\s*(seconds|secs|s|ms)\b/gi, "wallTime")
 		.replace(/\d{4}-\d{2}-\d{2}T[\d:.]+Z?/g, "TS")
 		.replace(/\b\d+(\.\d+)?\s*(ms|milliseconds)\b/gi, "DUR");
+}
+
+function compactVerifyFailureExcerpt(result: unknown): string | undefined {
+	const content = (result as { content?: Array<{ type?: string; text?: string }> } | undefined)?.content;
+	let raw = Array.isArray(content)
+		? content
+				.filter(block => block?.type === "text" && typeof block.text === "string")
+				.map(block => block.text)
+				.join("\n")
+		: "";
+	if (!raw) {
+		try {
+			raw = typeof result === "string" ? result : (JSON.stringify(result) ?? "");
+		} catch {
+			raw = String(result ?? "");
+		}
+	}
+	const lines = normalizeResultNoise(raw)
+		.replace(/\r/g, "\n")
+		.split("\n")
+		.map(line => line.trim())
+		.filter(line => line.length > 0 && !/^\[raw output: artifact:\/\/N\]$/i.test(line));
+	const chosen =
+		lines.find(line => /(error|failed|exception|traceback|panic|not found|expected|FAIL\b)/i.test(line)) ??
+		lines[0];
+	if (!chosen) return undefined;
+	return chosen.length > 220 ? `${chosen.slice(0, 217)}...` : chosen;
 }
 
 // Degenerate-generation constants — shared by the stream breaker (abort the
@@ -1888,6 +1918,34 @@ export default function consensusEvolve(pi: ExtensionAPI): void {
 			}
 			const mechanism = classifyFailure(errorText);
 			const sig = `${event.toolName}:${mechanism}`;
+			const command = (args as { command?: string } | undefined)?.command;
+			const verifyCommand =
+				event.toolName === "bash" && typeof command === "string" && VERIFY_COMMAND_RE.test(command)
+					? command.trim()
+					: "";
+			if (verifyCommand && !stats.verifyFailureHinted.has(verifyCommand)) {
+				stats.verifyFailureHinted.add(verifyCommand);
+				const excerpt = compactVerifyFailureExcerpt(event.result);
+				stats.healEvents++;
+				appendLog({
+					kind: "heal",
+					type: "verify-feedback",
+					command: verifyCommand.slice(0, 200),
+					excerpt,
+				});
+				pi.sendMessage(
+					{
+						customType: "consensus-evolve-nudge",
+						content:
+							`[consensus-evolve] Verification failed for \`${verifyCommand}\`. Treat this as grader feedback, not just another tool error.` +
+							(excerpt ? ` Excerpt: ${excerpt}` : "") +
+							" Read the failing output, fix ONLY what this check proved, then rerun the SAME verification command. " +
+							`Do not mark done or change plans until \`${verifyCommand}\` passes (exit 0).`,
+						display: true,
+					},
+					{ triggerTurn: false },
+				);
+			}
 
 			// Cluster.
 			const cluster = stats.signatures.get(sig) ?? { count: 0, samples: [] };
@@ -2208,6 +2266,7 @@ export default function consensusEvolve(pi: ExtensionAPI): void {
 		// the next user instruction can resurface the same hint if the model is
 		// still stuck after redirection.
 		stats.seqThinkHinted.clear();
+		stats.verifyFailureHinted.clear();
 		if (/^\s*(no\b|nope\b|wrong\b|stop\b|don'?t\b|not what)/i.test(event.text)) {
 			stats.corrections.push(event.text.slice(0, 150));
 		}
