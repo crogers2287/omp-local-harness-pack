@@ -1,0 +1,38 @@
+modelRoles:
+  default: llamaswap/local-secondary:off
+  vision: llamaswap/local-primary
+providers:
+  webSearch: searxng
+searxng:
+  endpoint: http://127.0.0.1:9090
+tools:
+  discoveryMode: all
+symbolPreset: unicode
+theme:
+  dark: titanium
+setupVersion: 1
+autoResume: true
+steeringMode: all
+followUpMode: all
+interruptMode: immediate
+contextPromotion:
+  enabled: true
+compaction:
+  thresholdPercent: 70
+  handoffSaveToDisk: true
+memory:
+  backend: local
+marketplace:
+  autoUpdate: auto
+todo:
+  eager: always
+vault:
+  enabled: false
+github:
+  enabled: true
+task:
+  eager: always
+doubleEscapeAction: tree
+startup:
+  quiet: true
+extensions: []

@@ -1,0 +1,31 @@
+# Runtime state
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+sessions/
+terminal-sessions/
+logs/
+memories/
+blobs/
+wal/
+cache/
+
+# Secrets and local env
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+hosts.yml
+auth.json
+credentials.json
+.credentials.json
+
+# Package/build noise
+node_modules/
+dist/
+build/
+.DS_Store

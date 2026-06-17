@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@modelcontextprotocol/sdk@1.24.0", "-p", "@upstash/context7-mcp@latest", "context7-mcp"]
+    },
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "zod", "-p", "@modelcontextprotocol/server-sequential-thinking", "mcp-server-sequential-thinking"]
+    },
+    "code-reasoning": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["<HOME>/.omp/agent/mcp-wrappers/code-reasoning-silent.mjs"]
+    },
+    "llamaswap": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["<HOME>/.local/share/omp-harness/mcp-llamaswap/index.js"],
+      "env": {
+        "LLAMASWAP_URL": "http://localhost:9069",
+        "DEFAULT_MODEL": "local-primary"
+      }
+    }
+  },
+  "disabledServers": []
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@croger/omp-subagent",
+  "version": "1.0.0",
+  "description": "Sub-agent extension for omp — delegates tasks to isolated subprocesses with KV cache preservation",
+  "main": "index.ts",
+  "type": "module",
+  "license": "MIT",
+  "omp": {
+    "extensions": ["./index.ts"]
+  }
+}

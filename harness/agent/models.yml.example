@@ -1,0 +1,78 @@
+providers:
+  llamaswap:
+    # Point this at your llama-swap or llama.cpp OpenAI-compatible endpoint.
+    baseUrl: http://localhost:9069/v1
+    api: openai-completions
+    apiKey: llamaswap-no-auth-required
+    disableStrictTools: true
+    models:
+      - id: local-primary
+        name: Local primary model
+        reasoning: false
+        input: [text]
+        contextWindow: 128000
+        maxTokens: 16384
+        compat:
+          extraBody:
+            dry_multiplier: 0.8
+            dry_base: 1.75
+            dry_allowed_length: 6
+            dry_penalty_last_n: 4096
+            dry_sequence_breakers: ["\n", ":", "\"", "*", "/", ".", "_", "-"]
+      - id: local-secondary
+        name: Local secondary model
+        reasoning: false
+        input: [text]
+        contextWindow: 128000
+        maxTokens: 16384
+        compat:
+          extraBody:
+            dry_multiplier: 0.8
+            dry_base: 1.75
+            dry_allowed_length: 6
+            dry_penalty_last_n: 4096
+            dry_sequence_breakers: ["\n", ":", "\"", "*", "/", ".", "_", "-"]
+
+  deepseek:
+    baseUrl: https://api.deepseek.com
+    api: openai-completions
+    apiKey: DEEPSEEK_API_KEY
+    authHeader: true
+    models:
+      - id: deepseek-v4-pro
+        name: DeepSeek V4 Pro
+        reasoning: true
+        thinking:
+          minLevel: high
+          maxLevel: xhigh
+          mode: effort
+        input: [text]
+        contextWindow: 1000000
+        maxTokens: 384000
+        compat:
+          supportsDeveloperRole: false
+          supportsReasoningEffort: true
+          maxTokensField: max_tokens
+          reasoningEffortMap:
+            high: high
+            xhigh: max
+          supportsToolChoice: false
+          requiresReasoningContentForToolCalls: true
+          requiresAssistantContentForToolCalls: true
+          extraBody:
+            thinking:
+              type: enabled
+
+  google:
+    baseUrl: https://generativelanguage.googleapis.com
+    api: google-generative-ai
+    apiKey: GEMINI_API_KEY
+    models:
+      - id: gemini-3.5-flash
+        name: Gemini 3.5 Flash
+        reasoning: true
+        input: [text, image]
+        contextWindow: 1048576
+        maxTokens: 65536
+        compat:
+          supportsStore: false

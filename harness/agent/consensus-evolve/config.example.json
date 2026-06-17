@@ -1,0 +1,29 @@
+{
+  "panelModels": [
+    "llamaswap/local-primary",
+    "llamaswap/local-secondary",
+    "deepseek/deepseek-v4-pro"
+  ],
+  "synthesizerModel": "",
+  "panelTimeoutMs": 120000,
+  "destructiveGate": "block",
+  "gateCooldownMs": 600000,
+  "failureStreakNudge": 2,
+  "reflectEveryTurns": 15,
+  "evolution": "on",
+  "maxInjectedRulesChars": 2000,
+  "maxRules": 40,
+  "verifyBeforeDone": "block",
+  "verifyWindowToolCalls": 6,
+  "maxVerifyBlocks": 3,
+  "maskStreakThreshold": 3,
+  "preflightBashHygiene": true,
+  "resultSteering": true,
+  "autoAblate": "on",
+  "autoAblateSeeds": 1,
+  "toolLoopBreaker": "on",
+  "toolLoopThreshold": 3,
+  "requestLoopAbortAt": 6,
+  "requestLoopSteerAt": 3,
+  "announceContinueMax": 2
+}
